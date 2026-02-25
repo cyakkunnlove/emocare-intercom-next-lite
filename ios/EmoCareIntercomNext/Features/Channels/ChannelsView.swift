@@ -46,7 +46,7 @@ struct ChannelsView: View {
             Text(viewModel.errorMessage ?? "")
         }
         .safeAreaInset(edge: .bottom) {
-            Color.clear.frame(height: canCreateChannel ? 96 : 16)
+            Color.clear.frame(height: canCreateChannel ? 112 : 88)
         }
         .sheet(isPresented: $showingChannelDetail) {
             if let channel = selectedChannel {
@@ -119,7 +119,7 @@ struct ChannelsView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.bottom, canCreateChannel ? 108 : 20)
+                .padding(.bottom, canCreateChannel ? 132 : 96)
             }
             .refreshable {
                 await viewModel.refreshChannels()
