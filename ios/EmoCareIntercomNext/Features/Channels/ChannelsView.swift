@@ -9,24 +9,29 @@ struct ChannelsView: View {
     @State private var searchText = ""
     @State private var showingCreateChannel = false
     
+    private var canCreateChannel: Bool {
+        authManager.user?.role == .admin || authManager.user?.role == .manager
+    }
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // 検索バー
-                SearchBar()
-                
-                // チャンネルリスト
-                ChannelsList()
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 0) {
+                    // 検索バー
+                    SearchBar()
+                    
+                    // チャンネルリスト
+                    ChannelsList()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                }
                 
                 // フローティング作成ボタン (管理者のみ)
-                if authManager.user?.role == .admin || authManager.user?.role == .manager {
+                if canCreateChannel {
                     CreateChannelFloatingButton()
                 }
             }
             .navigationTitle("チャンネル")
-            .refreshable {
-                await viewModel.refreshChannels()
-            }
+            .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.loadChannels()
             }
@@ -37,7 +42,11 @@ struct ChannelsView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: canCreateChannel ? 96 : 16)
+            }
         }
+        .navigationViewStyle(.stack)
         .sheet(isPresented: $showingChannelDetail) {
             if let channel = selectedChannel {
                 ChannelDetailView(channel: channel)
@@ -57,7 +66,7 @@ struct ChannelsView: View {
             
             TextField("チャンネルを検索", text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
-                .onChange(of: searchText) { _, newValue in
+                .onChange(of: searchText) { newValue in
                     viewModel.searchChannels(query: newValue)
                 }
         }
@@ -95,7 +104,10 @@ struct ChannelsView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.bottom, 100) // フローティングボタンのスペース
+                .padding(.bottom, canCreateChannel ? 108 : 20)
+            }
+            .refreshable {
+                await viewModel.refreshChannels()
             }
         }
     }
@@ -150,26 +162,19 @@ struct ChannelsView: View {
     // MARK: - Floating Create Button
     @ViewBuilder
     private func CreateChannelFloatingButton() -> some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                Button(action: {
-                    showingCreateChannel = true
-                }) {
-                    Image(systemName: "plus")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .frame(width: 56, height: 56)
-                        .background(Color.blue)
-                        .clipShape(Circle())
-                        .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
-                }
-                .padding(.trailing, 20)
-                .padding(.bottom, 20)
-            }
+        Button(action: {
+            showingCreateChannel = true
+        }) {
+            Image(systemName: "plus")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.blue)
+                .clipShape(Circle())
+                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
         }
+        .padding(.trailing, 20)
+        .padding(.bottom, 88)
     }
 }
 

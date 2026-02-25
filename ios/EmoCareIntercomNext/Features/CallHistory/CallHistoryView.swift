@@ -18,8 +18,10 @@ struct CallHistoryView: View {
                 
                 // 通話履歴リスト
                 CallHistoryListView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .navigationTitle("通話履歴")
+            .navigationBarTitleDisplayMode(.inline)
             .refreshable {
                 await viewModel.refreshCallHistory()
             }
@@ -33,7 +35,11 @@ struct CallHistoryView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 16)
+            }
         }
+        .navigationViewStyle(.stack)
         .actionSheet(isPresented: $showingFilterOptions) {
             ActionSheet(
                 title: Text("フィルター"),
@@ -58,7 +64,7 @@ struct CallHistoryView: View {
                 
                 TextField("通話を検索", text: $searchText)
                     .textFieldStyle(PlainTextFieldStyle())
-                    .onChange(of: searchText) { _, newValue in
+                    .onChange(of: searchText) { newValue in
                         viewModel.searchCalls(query: newValue)
                     }
                 
@@ -165,6 +171,9 @@ struct CallHistoryView: View {
                 }
             }
             .listStyle(PlainListStyle())
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 88)
+            }
         }
     }
     
