@@ -23,13 +23,8 @@ struct SettingsView: View {
             // 情報セクション
             InfoSection()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color(.systemBackground))
         .navigationTitle("設定")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            Color.clear.frame(height: 88)
-        }
         .alert("ログアウト", isPresented: $showingLogoutConfirmation) {
             Button("キャンセル", role: .cancel) { }
             Button("ログアウト", role: .destructive) {

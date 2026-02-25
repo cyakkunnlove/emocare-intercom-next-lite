@@ -14,25 +14,45 @@ struct ChannelsView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack(spacing: 0) {
-                // 検索バー
-                SearchBar()
-                
-                // チャンネルリスト
-                ChannelsList()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
-            
-            // フローティング作成ボタン (管理者のみ)
-            if canCreateChannel {
-                CreateChannelFloatingButton()
+        Group {
+            if viewModel.isLoading && viewModel.channels.isEmpty {
+                LoadingStateView()
+            } else if viewModel.filteredChannels.isEmpty {
+                EmptyStateView()
+            } else {
+                List {
+                    ForEach(viewModel.filteredChannels) { channel in
+                        ChannelRowView(
+                            channel: channel,
+                            onTap: {
+                                selectedChannel = channel
+                                showingChannelDetail = true
+                            },
+                            onCallTap: {
+                                Task {
+                                    await callManager.startCall(to: channel.id, isEmergency: channel.isEmergencyChannel)
+                                }
+                            }
+                        )
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await viewModel.refreshChannels()
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
         .navigationTitle("チャンネル")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
+        .searchable(text: $searchText, prompt: "チャンネルを検索")
+        .onChange(of: searchText) { newValue in
+            viewModel.searchChannels(query: newValue)
+        }
+        .navigationBarItems(trailing: createChannelNavButton())
         .task {
             await viewModel.loadChannels()
         }
@@ -53,58 +73,16 @@ struct ChannelsView: View {
         }
     }
     
-    // MARK: - Search Bar
     @ViewBuilder
-    private func SearchBar() -> some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-            
-            TextField("チャンネルを検索", text: $searchText)
-                .textFieldStyle(PlainTextFieldStyle())
-                .onChange(of: searchText) { newValue in
-                    viewModel.searchChannels(query: newValue)
-                }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
-        .padding(.horizontal)
-        .padding(.top, 8)
-    }
-    
-    // MARK: - Channels List
-    @ViewBuilder
-    private func ChannelsList() -> some View {
-        if viewModel.isLoading && viewModel.channels.isEmpty {
-            LoadingStateView()
-        } else if viewModel.channels.isEmpty {
-            EmptyStateView()
+    private func createChannelNavButton() -> some View {
+        if canCreateChannel {
+            Button {
+                showingCreateChannel = true
+            } label: {
+                Image(systemName: "plus")
+            }
         } else {
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(viewModel.filteredChannels) { channel in
-                        ChannelRowView(
-                            channel: channel,
-                            onTap: {
-                                selectedChannel = channel
-                                showingChannelDetail = true
-                            },
-                            onCallTap: {
-                                Task {
-                                    await callManager.startCall(to: channel.id, isEmergency: channel.isEmergencyChannel)
-                                }
-                            }
-                        )
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, canCreateChannel ? 120 : 16)
-            }
-            .refreshable {
-                await viewModel.refreshChannels()
-            }
+            EmptyView()
         }
     }
     
@@ -155,23 +133,6 @@ struct ChannelsView: View {
         .padding()
     }
     
-    // MARK: - Floating Create Button
-    @ViewBuilder
-    private func CreateChannelFloatingButton() -> some View {
-        Button(action: {
-            showingCreateChannel = true
-        }) {
-            Image(systemName: "plus")
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(width: 56, height: 56)
-                .background(Color.blue)
-                .clipShape(Circle())
-                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
-        }
-        .padding(.trailing, 20)
-        .padding(.bottom, 24)
-    }
 }
 
 // MARK: - Channel Row View

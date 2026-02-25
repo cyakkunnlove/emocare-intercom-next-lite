@@ -2,29 +2,67 @@ import SwiftUI
 
 struct CallHistoryView: View {
     @StateObject private var viewModel = CallHistoryViewModel()
-    @EnvironmentObject private var authManager: AuthenticationManager
     @State private var searchText = ""
     @State private var selectedFilter: CallHistoryFilter = .all
-    @State private var showingFilterOptions = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            // 検索・フィルターバー
-            SearchAndFilterBar()
-            
-            // 統計サマリー
-            StatisticsSummaryView()
-            
-            // 通話履歴リスト
-            CallHistoryListView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        Group {
+            if viewModel.isLoading && viewModel.filteredCalls.isEmpty {
+                LoadingStateView()
+            } else if viewModel.filteredCalls.isEmpty {
+                EmptyStateView()
+            } else {
+                List {
+                    StatisticsSummarySection()
+                    
+                    ForEach(groupedCalls, id: \.key) { section in
+                        Section(header: Text(section.key)) {
+                            ForEach(section.value) { call in
+                                CallRowView(call: call)
+                                    .contextMenu {
+                                        CallContextMenu(call: call)
+                                    }
+                            }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await viewModel.refreshCallHistory()
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
         .navigationTitle("通話履歴")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
+        .searchable(text: $searchText, prompt: "通話を検索")
+        .onChange(of: searchText) { newValue in
+            viewModel.searchCalls(query: newValue)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    ForEach(CallHistoryFilter.allCases, id: \.self) { filter in
+                        Button {
+                            selectedFilter = filter
+                            viewModel.applyFilter(filter)
+                        } label: {
+                            if selectedFilter == filter {
+                                Label(filter.displayName, systemImage: "checkmark")
+                            } else {
+                                Text(filter.displayName)
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                }
+            }
+        }
         .task {
             await viewModel.loadCallHistory()
+            viewModel.applyFilter(selectedFilter)
         }
         .alert("エラー", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK") {
@@ -33,81 +71,14 @@ struct CallHistoryView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .actionSheet(isPresented: $showingFilterOptions) {
-            ActionSheet(
-                title: Text("フィルター"),
-                buttons: CallHistoryFilter.allCases.map { filter in
-                    .default(Text(filter.displayName)) {
-                        selectedFilter = filter
-                        viewModel.applyFilter(filter)
-                    }
-                } + [.cancel()]
-            )
-        }
-    }
-    
-    // MARK: - Search and Filter Bar
-    @ViewBuilder
-    private func SearchAndFilterBar() -> some View {
-        VStack(spacing: 12) {
-            // 検索バー
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                
-                TextField("通話を検索", text: $searchText)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .onChange(of: searchText) { newValue in
-                        viewModel.searchCalls(query: newValue)
-                    }
-                
-                if !searchText.isEmpty {
-                    Button("クリア") {
-                        searchText = ""
-                        viewModel.searchCalls(query: "")
-                    }
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                }
-            }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(10)
-            
-            // フィルターボタン
-            HStack {
-                Button(action: { showingFilterOptions = true }) {
-                    HStack {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                        Text(selectedFilter.displayName)
-                        Image(systemName: "chevron.down")
-                            .font(.caption)
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(16)
-                }
-                
-                Spacer()
-                
-                Text("\(viewModel.filteredCalls.count)件")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.horizontal)
-        .padding(.top, 8)
     }
     
     // MARK: - Statistics Summary
     @ViewBuilder
-    private func StatisticsSummaryView() -> some View {
+    private func StatisticsSummarySection() -> some View {
         if !viewModel.isLoading {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     StatisticCardView(
                         title: "今日",
                         value: "\(viewModel.statistics.todayCalls)",
@@ -136,40 +107,11 @@ struct CallHistoryView: View {
                         color: .red
                     )
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 4)
             }
-            .padding(.vertical, 12)
-            .background(Color(.systemGray6))
-        }
-    }
-    
-    // MARK: - Call History List
-    @ViewBuilder
-    private func CallHistoryListView() -> some View {
-        if viewModel.isLoading && viewModel.filteredCalls.isEmpty {
-            LoadingStateView()
-        } else if viewModel.filteredCalls.isEmpty {
-            EmptyStateView()
-        } else {
-            List {
-                ForEach(groupedCalls, id: \.key) { section in
-                    Section(header: Text(section.key)) {
-                        ForEach(section.value) { call in
-                            CallRowView(call: call)
-                                .contextMenu {
-                                    CallContextMenu(call: call)
-                                }
-                        }
-                    }
-                }
-            }
-            .listStyle(PlainListStyle())
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 16)
-            }
-            .refreshable {
-                await viewModel.refreshCallHistory()
-            }
+            .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+            .listRowBackground(Color.clear)
         }
     }
     
