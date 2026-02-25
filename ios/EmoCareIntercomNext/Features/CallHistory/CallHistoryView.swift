@@ -19,11 +19,10 @@ struct CallHistoryView: View {
             CallHistoryListView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color(.systemBackground))
         .navigationTitle("通話履歴")
         .navigationBarTitleDisplayMode(.inline)
-        .refreshable {
-            await viewModel.refreshCallHistory()
-        }
         .task {
             await viewModel.loadCallHistory()
         }
@@ -170,6 +169,9 @@ struct CallHistoryView: View {
             .listStyle(PlainListStyle())
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: 88)
+            }
+            .refreshable {
+                await viewModel.refreshCallHistory()
             }
         }
     }

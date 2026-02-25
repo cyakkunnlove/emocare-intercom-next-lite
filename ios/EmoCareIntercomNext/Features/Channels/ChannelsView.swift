@@ -29,6 +29,8 @@ struct ChannelsView: View {
                 CreateChannelFloatingButton()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color(.systemBackground))
         .navigationTitle("チャンネル")
         .navigationBarTitleDisplayMode(.inline)
         .task {
