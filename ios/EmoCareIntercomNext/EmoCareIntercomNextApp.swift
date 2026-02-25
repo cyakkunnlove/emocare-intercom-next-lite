@@ -34,28 +34,9 @@ struct EmoCareIntercomNextApp: App {
     }
     
     private func setupAppearance() {
-        // ナビゲーション/タブバーの見た目を固定（iOSバージョン差異による余白変動を抑制）
-        let navigationAppearance = UINavigationBarAppearance()
-        navigationAppearance.configureWithOpaqueBackground()
-        navigationAppearance.backgroundColor = .systemBackground
-        
-        UINavigationBar.appearance().standardAppearance = navigationAppearance
-        UINavigationBar.appearance().scrollEdgeAppearance = navigationAppearance
-        UINavigationBar.appearance().compactAppearance = navigationAppearance
-        if #available(iOS 15.0, *) {
-            UINavigationBar.appearance().compactScrollEdgeAppearance = navigationAppearance
-        }
+        // アプリのビジュアル設定
         UINavigationBar.appearance().tintColor = UIColor(Color.primary)
-        
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = .systemBackground
-        
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        if #available(iOS 15.0, *) {
-            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        }
-        UITabBar.appearance().tintColor = .systemBlue
+        UITabBar.appearance().backgroundColor = UIColor.systemBackground
     }
     
     private func setupPushNotifications() {

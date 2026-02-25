@@ -31,8 +31,10 @@ struct ChannelsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
-        .navigationTitle("チャンネル")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            ScreenHeader(title: "チャンネル")
+        }
         .task {
             await viewModel.loadChannels()
         }
@@ -56,6 +58,20 @@ struct ChannelsView: View {
         }
     }
     
+    @ViewBuilder
+    private func ScreenHeader(title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 36, weight: .bold))
+                .foregroundColor(.primary)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 10)
+        .background(Color(.systemBackground))
+    }
+    
     // MARK: - Search Bar
     @ViewBuilder
     private func SearchBar() -> some View {
@@ -73,7 +89,7 @@ struct ChannelsView: View {
         .background(Color(.systemGray6))
         .cornerRadius(10)
         .padding(.horizontal)
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
     
     // MARK: - Channels List

@@ -21,8 +21,10 @@ struct CallHistoryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
-        .navigationTitle("通話履歴")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            ScreenHeader(title: "通話履歴")
+        }
         .task {
             await viewModel.loadCallHistory()
         }
@@ -47,6 +49,20 @@ struct CallHistoryView: View {
                 } + [.cancel()]
             )
         }
+    }
+    
+    @ViewBuilder
+    private func ScreenHeader(title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 36, weight: .bold))
+                .foregroundColor(.primary)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 10)
+        .background(Color(.systemBackground))
     }
     
     // MARK: - Search and Filter Bar
@@ -102,7 +118,7 @@ struct CallHistoryView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
     
     // MARK: - Statistics Summary
