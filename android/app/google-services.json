@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "893658527924",
+    "project_id": "emo-carepocket",
+    "storage_bucket": "emo-carepocket.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893658527924:android:4ea066bdd7e21f51f0ffe1",
+        "android_client_info": {
+          "package_name": "com.emocare.intercom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbxJ1ZrmUUVRO6aCri2CWfFNJyyV_gBiY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893658527924:android:0f950e9af21169ecf0ffe1",
+        "android_client_info": {
+          "package_name": "com.emocare.pocket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbxJ1ZrmUUVRO6aCri2CWfFNJyyV_gBiY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
