@@ -7,37 +7,36 @@ struct SettingsView: View {
     @State private var showingAbout = false
     
     var body: some View {
-        NavigationView {
-            List {
-                // ユーザー情報セクション
-                UserInfoSection()
-                
-                // 音声設定セクション
-                AudioSettingsSection()
-                
-                // アプリ設定セクション
-                AppSettingsSection()
-                
-                // アカウント管理セクション
-                AccountSection()
-                
-                // 情報セクション
-                InfoSection()
-            }
-            .navigationTitle("設定")
-            .alert("ログアウト", isPresented: $showingLogoutConfirmation) {
-                Button("キャンセル", role: .cancel) { }
-                Button("ログアウト", role: .destructive) {
-                    Task {
-                        await authManager.logout()
-                    }
+        List {
+            // ユーザー情報セクション
+            UserInfoSection()
+            
+            // 音声設定セクション
+            AudioSettingsSection()
+            
+            // アプリ設定セクション
+            AppSettingsSection()
+            
+            // アカウント管理セクション
+            AccountSection()
+            
+            // 情報セクション
+            InfoSection()
+        }
+        .navigationTitle("設定")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("ログアウト", isPresented: $showingLogoutConfirmation) {
+            Button("キャンセル", role: .cancel) { }
+            Button("ログアウト", role: .destructive) {
+                Task {
+                    await authManager.logout()
                 }
-            } message: {
-                Text("ログアウトしてもよろしいですか？")
             }
-            .sheet(isPresented: $showingAbout) {
-                AboutView()
-            }
+        } message: {
+            Text("ログアウトしてもよろしいですか？")
+        }
+        .sheet(isPresented: $showingAbout) {
+            AboutView()
         }
     }
     
