@@ -68,7 +68,7 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        let tab = TabView(selection: $selectedTab) {
             // チャンネル一覧
             AdaptiveNavigationContainer {
                 ChannelsView()
@@ -99,18 +99,31 @@ struct MainTabView: View {
                 }
                 .tag(2)
         }
-        .accentColor(.blue)
-        .overlay(
-            // 通話中オーバーレイ
-            Group {
-                if callManager.isInCall {
-                    CallOverlayView()
-                        .transition(.move(edge: .bottom))
-                        .zIndex(1000)
+        .tint(.blue)
+        
+        applyModernBarVisibilityIfAvailable(to: tab)
+            .overlay(
+                // 通話中オーバーレイ
+                Group {
+                    if callManager.isInCall {
+                        CallOverlayView()
+                            .transition(.move(edge: .bottom))
+                            .zIndex(1000)
+                    }
                 }
-            }
-        )
-        .animation(.spring(), value: callManager.isInCall)
+            )
+            .animation(.spring(), value: callManager.isInCall)
+    }
+    
+    @ViewBuilder
+    private func applyModernBarVisibilityIfAvailable<Content: View>(to content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbarBackground(.visible, for: .tabBar)
+        } else {
+            content
+        }
     }
 }
 
