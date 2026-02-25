@@ -8,23 +8,25 @@ struct CallHistoryView: View {
     @State private var showingFilterOptions = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            // 検索・フィルターバー
-            SearchAndFilterBar()
-            
-            // 統計サマリー
-            StatisticsSummaryView()
-            
-            // 通話履歴リスト
-            CallHistoryListView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                ScreenHeader(title: "通話履歴", topInset: geometry.safeAreaInsets.top)
+                
+                // 検索・フィルターバー
+                SearchAndFilterBar()
+                
+                // 統計サマリー
+                StatisticsSummaryView()
+                
+                // 通話履歴リスト
+                CallHistoryListView(bottomInset: geometry.safeAreaInsets.bottom)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
-        .navigationBarHidden(true)
-        .safeAreaInset(edge: .top) {
-            ScreenHeader(title: "通話履歴")
-        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {
             await viewModel.loadCallHistory()
         }
@@ -51,8 +53,7 @@ struct CallHistoryView: View {
         }
     }
     
-    @ViewBuilder
-    private func ScreenHeader(title: String) -> some View {
+    private func ScreenHeader(title: String, topInset: CGFloat) -> some View {
         HStack {
             Text(title)
                 .font(.system(size: 36, weight: .bold))
@@ -60,7 +61,7 @@ struct CallHistoryView: View {
             Spacer()
         }
         .padding(.horizontal, 20)
-        .padding(.top, 8)
+        .padding(.top, max(8, topInset + 6))
         .padding(.bottom, 10)
         .background(Color(.systemBackground))
     }
@@ -164,7 +165,7 @@ struct CallHistoryView: View {
     
     // MARK: - Call History List
     @ViewBuilder
-    private func CallHistoryListView() -> some View {
+    private func CallHistoryListView(bottomInset: CGFloat) -> some View {
         if viewModel.isLoading && viewModel.filteredCalls.isEmpty {
             LoadingStateView()
         } else if viewModel.filteredCalls.isEmpty {
@@ -184,7 +185,7 @@ struct CallHistoryView: View {
             }
             .listStyle(PlainListStyle())
             .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 88)
+                Color.clear.frame(height: max(12, bottomInset + 4))
             }
             .refreshable {
                 await viewModel.refreshCallHistory()

@@ -14,27 +14,29 @@ struct ChannelsView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack(spacing: 0) {
-                // 検索バー
-                SearchBar()
+        GeometryReader { geometry in
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 0) {
+                    ScreenHeader(title: "チャンネル", topInset: geometry.safeAreaInsets.top)
+                    
+                    // 検索バー
+                    SearchBar()
+                    
+                    // チャンネルリスト
+                    ChannelsList(bottomInset: geometry.safeAreaInsets.bottom)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
                 
-                // チャンネルリスト
-                ChannelsList()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
-            
-            // フローティング作成ボタン (管理者のみ)
-            if canCreateChannel {
-                CreateChannelFloatingButton()
+                // フローティング作成ボタン (管理者のみ)
+                if canCreateChannel {
+                    CreateChannelFloatingButton(bottomInset: geometry.safeAreaInsets.bottom)
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
-        .navigationBarHidden(true)
-        .safeAreaInset(edge: .top) {
-            ScreenHeader(title: "チャンネル")
-        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {
             await viewModel.loadChannels()
         }
@@ -58,8 +60,7 @@ struct ChannelsView: View {
         }
     }
     
-    @ViewBuilder
-    private func ScreenHeader(title: String) -> some View {
+    private func ScreenHeader(title: String, topInset: CGFloat) -> some View {
         HStack {
             Text(title)
                 .font(.system(size: 36, weight: .bold))
@@ -67,7 +68,7 @@ struct ChannelsView: View {
             Spacer()
         }
         .padding(.horizontal, 20)
-        .padding(.top, 8)
+        .padding(.top, max(8, topInset + 6))
         .padding(.bottom, 10)
         .background(Color(.systemBackground))
     }
@@ -94,7 +95,7 @@ struct ChannelsView: View {
     
     // MARK: - Channels List
     @ViewBuilder
-    private func ChannelsList() -> some View {
+    private func ChannelsList(bottomInset: CGFloat) -> some View {
         if viewModel.isLoading && viewModel.channels.isEmpty {
             LoadingStateView()
         } else if viewModel.channels.isEmpty {
@@ -119,7 +120,7 @@ struct ChannelsView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.bottom, canCreateChannel ? 132 : 96)
+                .padding(.bottom, canCreateChannel ? max(118, bottomInset + 98) : max(24, bottomInset + 8))
             }
             .refreshable {
                 await viewModel.refreshChannels()
@@ -176,7 +177,7 @@ struct ChannelsView: View {
     
     // MARK: - Floating Create Button
     @ViewBuilder
-    private func CreateChannelFloatingButton() -> some View {
+    private func CreateChannelFloatingButton(bottomInset: CGFloat) -> some View {
         Button(action: {
             showingCreateChannel = true
         }) {
@@ -189,7 +190,7 @@ struct ChannelsView: View {
                 .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
         }
         .padding(.trailing, 20)
-        .padding(.bottom, 88)
+        .padding(.bottom, max(24, bottomInset + 16))
     }
 }
 

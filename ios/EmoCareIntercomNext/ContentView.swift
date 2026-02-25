@@ -70,9 +70,7 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             // チャンネル一覧
-            AdaptiveNavigationContainer {
-                ChannelsView()
-            }
+            ChannelsView()
                 .tabItem {
                     Image(systemName: "rectangle.3.group")
                     Text("チャンネル")
@@ -80,9 +78,7 @@ struct MainTabView: View {
                 .tag(0)
             
             // 通話履歴
-            AdaptiveNavigationContainer {
-                CallHistoryView()
-            }
+            CallHistoryView()
                 .tabItem {
                     Image(systemName: "clock")
                     Text("履歴")
