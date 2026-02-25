@@ -16,8 +16,6 @@ struct ChannelsView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0) {
-                ScreenHeader(title: "チャンネル")
-                
                 // 検索バー
                 SearchBar()
                 
@@ -33,7 +31,8 @@ struct ChannelsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
-        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .navigationTitle("チャンネル")
+        .navigationBarTitleDisplayMode(.large)
         .task {
             await viewModel.loadChannels()
         }
@@ -44,9 +43,6 @@ struct ChannelsView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .safeAreaInset(edge: .bottom) {
-            Color.clear.frame(height: canCreateChannel ? 112 : 88)
-        }
         .sheet(isPresented: $showingChannelDetail) {
             if let channel = selectedChannel {
                 ChannelDetailView(channel: channel)
@@ -55,19 +51,6 @@ struct ChannelsView: View {
         .sheet(isPresented: $showingCreateChannel) {
             CreateChannelView()
         }
-    }
-    
-    private func ScreenHeader(title: String) -> some View {
-        HStack {
-            Text(title)
-                .font(.system(size: 36, weight: .bold))
-                .foregroundColor(.primary)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .padding(.bottom, 10)
-        .background(Color(.systemBackground))
     }
     
     // MARK: - Search Bar
@@ -87,7 +70,7 @@ struct ChannelsView: View {
         .background(Color(.systemGray6))
         .cornerRadius(10)
         .padding(.horizontal)
-        .padding(.top, 4)
+        .padding(.top, 8)
     }
     
     // MARK: - Channels List
@@ -117,7 +100,7 @@ struct ChannelsView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.bottom, canCreateChannel ? 132 : 96)
+                .padding(.bottom, canCreateChannel ? 120 : 16)
             }
             .refreshable {
                 await viewModel.refreshChannels()
@@ -187,7 +170,7 @@ struct ChannelsView: View {
                 .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
         }
         .padding(.trailing, 20)
-        .padding(.bottom, 88)
+        .padding(.bottom, 24)
     }
 }
 

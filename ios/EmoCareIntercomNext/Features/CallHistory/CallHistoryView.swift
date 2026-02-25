@@ -9,8 +9,6 @@ struct CallHistoryView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "通話履歴")
-            
             // 検索・フィルターバー
             SearchAndFilterBar()
             
@@ -23,7 +21,8 @@ struct CallHistoryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
-        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .navigationTitle("通話履歴")
+        .navigationBarTitleDisplayMode(.large)
         .task {
             await viewModel.loadCallHistory()
         }
@@ -33,9 +32,6 @@ struct CallHistoryView: View {
             }
         } message: {
             Text(viewModel.errorMessage ?? "")
-        }
-        .safeAreaInset(edge: .bottom) {
-            Color.clear.frame(height: 16)
         }
         .actionSheet(isPresented: $showingFilterOptions) {
             ActionSheet(
@@ -48,19 +44,6 @@ struct CallHistoryView: View {
                 } + [.cancel()]
             )
         }
-    }
-    
-    private func ScreenHeader(title: String) -> some View {
-        HStack {
-            Text(title)
-                .font(.system(size: 36, weight: .bold))
-                .foregroundColor(.primary)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .padding(.bottom, 10)
-        .background(Color(.systemBackground))
     }
     
     // MARK: - Search and Filter Bar
@@ -116,7 +99,7 @@ struct CallHistoryView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.top, 4)
+        .padding(.top, 8)
     }
     
     // MARK: - Statistics Summary
@@ -182,7 +165,7 @@ struct CallHistoryView: View {
             }
             .listStyle(PlainListStyle())
             .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 88)
+                Color.clear.frame(height: 16)
             }
             .refreshable {
                 await viewModel.refreshCallHistory()
