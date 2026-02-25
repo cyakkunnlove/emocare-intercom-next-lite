@@ -8,38 +8,35 @@ struct CallHistoryView: View {
     @State private var showingFilterOptions = false
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // 検索・フィルターバー
-                SearchAndFilterBar()
-                
-                // 統計サマリー
-                StatisticsSummaryView()
-                
-                // 通話履歴リスト
-                CallHistoryListView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
-            .navigationTitle("通話履歴")
-            .navigationBarTitleDisplayMode(.inline)
-            .refreshable {
-                await viewModel.refreshCallHistory()
-            }
-            .task {
-                await viewModel.loadCallHistory()
-            }
-            .alert("エラー", isPresented: .constant(viewModel.errorMessage != nil)) {
-                Button("OK") {
-                    viewModel.errorMessage = nil
-                }
-            } message: {
-                Text(viewModel.errorMessage ?? "")
-            }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 16)
-            }
+        VStack(spacing: 0) {
+            // 検索・フィルターバー
+            SearchAndFilterBar()
+            
+            // 統計サマリー
+            StatisticsSummaryView()
+            
+            // 通話履歴リスト
+            CallHistoryListView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .navigationViewStyle(.stack)
+        .navigationTitle("通話履歴")
+        .navigationBarTitleDisplayMode(.inline)
+        .refreshable {
+            await viewModel.refreshCallHistory()
+        }
+        .task {
+            await viewModel.loadCallHistory()
+        }
+        .alert("エラー", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 16)
+        }
         .actionSheet(isPresented: $showingFilterOptions) {
             ActionSheet(
                 title: Text("フィルター"),

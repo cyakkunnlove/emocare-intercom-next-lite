@@ -7,43 +7,40 @@ struct SettingsView: View {
     @State private var showingAbout = false
     
     var body: some View {
-        NavigationView {
-            List {
-                // ユーザー情報セクション
-                UserInfoSection()
-                
-                // 音声設定セクション
-                AudioSettingsSection()
-                
-                // アプリ設定セクション
-                AppSettingsSection()
-                
-                // アカウント管理セクション
-                AccountSection()
-                
-                // 情報セクション
-                InfoSection()
-            }
-            .navigationTitle("設定")
-            .navigationBarTitleDisplayMode(.inline)
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 88)
-            }
-            .alert("ログアウト", isPresented: $showingLogoutConfirmation) {
-                Button("キャンセル", role: .cancel) { }
-                Button("ログアウト", role: .destructive) {
-                    Task {
-                        await authManager.logout()
-                    }
-                }
-            } message: {
-                Text("ログアウトしてもよろしいですか？")
-            }
-            .sheet(isPresented: $showingAbout) {
-                AboutView()
-            }
+        List {
+            // ユーザー情報セクション
+            UserInfoSection()
+            
+            // 音声設定セクション
+            AudioSettingsSection()
+            
+            // アプリ設定セクション
+            AppSettingsSection()
+            
+            // アカウント管理セクション
+            AccountSection()
+            
+            // 情報セクション
+            InfoSection()
         }
-        .navigationViewStyle(.stack)
+        .navigationTitle("設定")
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 88)
+        }
+        .alert("ログアウト", isPresented: $showingLogoutConfirmation) {
+            Button("キャンセル", role: .cancel) { }
+            Button("ログアウト", role: .destructive) {
+                Task {
+                    await authManager.logout()
+                }
+            }
+        } message: {
+            Text("ログアウトしてもよろしいですか？")
+        }
+        .sheet(isPresented: $showingAbout) {
+            AboutView()
+        }
     }
     
     // MARK: - User Info Section

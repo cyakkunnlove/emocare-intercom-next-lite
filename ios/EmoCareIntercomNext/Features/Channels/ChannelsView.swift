@@ -14,39 +14,36 @@ struct ChannelsView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .bottomTrailing) {
-                VStack(spacing: 0) {
-                    // 検索バー
-                    SearchBar()
-                    
-                    // チャンネルリスト
-                    ChannelsList()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                }
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
+                // 検索バー
+                SearchBar()
                 
-                // フローティング作成ボタン (管理者のみ)
-                if canCreateChannel {
-                    CreateChannelFloatingButton()
-                }
+                // チャンネルリスト
+                ChannelsList()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-            .navigationTitle("チャンネル")
-            .navigationBarTitleDisplayMode(.inline)
-            .task {
-                await viewModel.loadChannels()
-            }
-            .alert("エラー", isPresented: .constant(viewModel.errorMessage != nil)) {
-                Button("OK") {
-                    viewModel.errorMessage = nil
-                }
-            } message: {
-                Text(viewModel.errorMessage ?? "")
-            }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: canCreateChannel ? 96 : 16)
+            
+            // フローティング作成ボタン (管理者のみ)
+            if canCreateChannel {
+                CreateChannelFloatingButton()
             }
         }
-        .navigationViewStyle(.stack)
+        .navigationTitle("チャンネル")
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadChannels()
+        }
+        .alert("エラー", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: canCreateChannel ? 96 : 16)
+        }
         .sheet(isPresented: $showingChannelDetail) {
             if let channel = selectedChannel {
                 ChannelDetailView(channel: channel)

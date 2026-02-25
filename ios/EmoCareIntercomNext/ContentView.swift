@@ -70,7 +70,9 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             // チャンネル一覧
-            ChannelsView()
+            AdaptiveNavigationContainer {
+                ChannelsView()
+            }
                 .tabItem {
                     Image(systemName: "rectangle.3.group")
                     Text("チャンネル")
@@ -78,7 +80,9 @@ struct MainTabView: View {
                 .tag(0)
             
             // 通話履歴
-            CallHistoryView()
+            AdaptiveNavigationContainer {
+                CallHistoryView()
+            }
                 .tabItem {
                     Image(systemName: "clock")
                     Text("履歴")
@@ -86,7 +90,9 @@ struct MainTabView: View {
                 .tag(1)
             
             // 設定
-            SettingsView()
+            AdaptiveNavigationContainer {
+                SettingsView()
+            }
                 .tabItem {
                     Image(systemName: "gearshape")
                     Text("設定")
@@ -108,6 +114,23 @@ struct MainTabView: View {
     }
 }
 
+struct AdaptiveNavigationContainer<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+    
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content()
+            }
+        } else {
+            NavigationView {
+                content()
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+        }
+    }
+}
+
 // Placeholder views removed - using actual implementations from Features/
 
 struct CallOverlayView: View {
@@ -121,7 +144,9 @@ struct CallOverlayView: View {
                     .fontWeight(.semibold)
                 Spacer()
                 Button("終了") {
-                    callManager.endCall()
+                    Task {
+                        await callManager.endCall()
+                    }
                 }
                 .foregroundColor(.red)
             }
