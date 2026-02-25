@@ -33,7 +33,7 @@ class ChannelsViewModel: ObservableObject {
         defer { isLoading = false }
         
         do {
-            guard let user = AuthenticationManager().user else {
+            guard let user = try await SupabaseService.shared.getCurrentUser() else {
                 throw ChannelsError.userNotAuthenticated
             }
             
@@ -84,7 +84,7 @@ class ChannelsViewModel: ObservableObject {
     }
     
     func createChannel(name: String, description: String, isEmergency: Bool) async throws {
-        guard let user = AuthenticationManager().user else {
+        guard let user = try await SupabaseService.shared.getCurrentUser() else {
             throw ChannelsError.userNotAuthenticated
         }
         
@@ -109,7 +109,7 @@ class ChannelsViewModel: ObservableObject {
         
         // TODO: Supabaseにチャンネル作成API呼び出し
         // 現在はモック実装
-        await Task.sleep(nanoseconds: 1_000_000_000) // 1秒待機
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1秒待機
         
         await MainActor.run {
             self.channels.append(newChannel)
@@ -126,7 +126,7 @@ class ChannelsViewModel: ObservableObject {
     }
     
     func deleteChannel(_ channel: Channel) async throws {
-        guard let user = AuthenticationManager().user else {
+        guard let user = try await SupabaseService.shared.getCurrentUser() else {
             throw ChannelsError.userNotAuthenticated
         }
         
@@ -141,7 +141,7 @@ class ChannelsViewModel: ObservableObject {
         }
         
         // TODO: Supabaseからチャンネル削除API呼び出し
-        await Task.sleep(nanoseconds: 500_000_000) // 0.5秒待機
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒待機
         
         await MainActor.run {
             self.channels.removeAll { $0.id == channel.id }
@@ -152,7 +152,7 @@ class ChannelsViewModel: ObservableObject {
     }
     
     func updateChannel(_ channel: Channel, name: String, description: String) async throws {
-        guard let user = AuthenticationManager().user else {
+        guard let user = try await SupabaseService.shared.getCurrentUser() else {
             throw ChannelsError.userNotAuthenticated
         }
         
@@ -162,15 +162,20 @@ class ChannelsViewModel: ObservableObject {
         }
         
         // TODO: Supabaseでチャンネル更新API呼び出し
-        await Task.sleep(nanoseconds: 500_000_000) // 0.5秒待機
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒待機
         
         await MainActor.run {
             if let index = self.channels.firstIndex(where: { $0.id == channel.id }) {
-                var updatedChannel = self.channels[index]
-                updatedChannel.name = name
-                updatedChannel.description = description
-                updatedChannel.updatedAt = Date()
-                
+                let current = self.channels[index]
+                let updatedChannel = Channel(
+                    id: current.id,
+                    name: name,
+                    description: description,
+                    facilityId: current.facilityId,
+                    isEmergencyChannel: current.isEmergencyChannel,
+                    createdAt: current.createdAt,
+                    updatedAt: Date()
+                )
                 self.channels[index] = updatedChannel
                 self.applySearchFilter()
             }
@@ -216,8 +221,8 @@ class ChannelsViewModel: ObservableObject {
         return channels.filter { !$0.isEmergencyChannel }
     }
     
-    func isUserAllowedToManageChannels() -> Bool {
-        guard let user = AuthenticationManager().user else { return false }
+    func isUserAllowedToManageChannels() async -> Bool {
+        guard let user = try? await SupabaseService.shared.getCurrentUser() else { return false }
         return user.role == .admin || user.role == .manager
     }
     
